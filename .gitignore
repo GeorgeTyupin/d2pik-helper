@@ -1,0 +1,14 @@
+# Compiled binaries
+build/bin/
+d2pik.exe
+d2pik-helper.exe
+*.exe
+
+# Wails dev artifacts
+*-dev.exe
+
+# Go
+*.syso
+
+# User config
+~/.d2pik/
