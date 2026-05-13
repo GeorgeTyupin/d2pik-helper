@@ -3,6 +3,37 @@
 
 function ScreenSettings({ theme, setTheme, lang, setLang }) {
   const t = useT();
+  const [token, setToken] = React.useState('');
+  const [tokenSaved, setTokenSaved] = React.useState(false);
+
+  React.useEffect(() => {
+    const go = window.go?.app?.App;
+    if (!go) return;
+    go.GetSetting('stratz_token').then(v => { if (v) setToken(v); }).catch(() => {});
+  }, []);
+
+  const saveToken = () => {
+    const go = window.go?.app?.App;
+    if (!go) return;
+    go.SetSetting('stratz_token', token.trim()).then(() => {
+      setTokenSaved(true);
+      setTimeout(() => setTokenSaved(false), 2000);
+    }).catch(() => {});
+  };
+
+  const pasteToken = () => {
+    if (window.runtime?.ClipboardGetText) {
+      window.runtime.ClipboardGetText().then(text => { if (text) setToken(text.trim()); }).catch(() => {});
+    } else {
+      navigator.clipboard?.readText().then(text => { if (text) setToken(text.trim()); }).catch(() => {});
+    }
+  };
+
+  const clearToken = () => {
+    setToken('');
+    const go = window.go?.app?.App;
+    if (go) go.SetSetting('stratz_token', '').catch(() => {});
+  };
 
   return (
     <>
@@ -60,6 +91,48 @@ function ScreenSettings({ theme, setTheme, lang, setLang }) {
                     onClick={() => setLang(l.key)}
                   />
                 ))}
+              </div>
+            </SettingGroup>
+
+            {/* Stratz token */}
+            <SettingGroup title={t('settings.token')} hint={t('settings.token.hint')}>
+              <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                <input
+                  type="text"
+                  value={token}
+                  onChange={e => setToken(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && saveToken()}
+                  placeholder="Stratz API token…"
+                  className="mono"
+                  style={{
+                    flex: 1, minWidth: 0,
+                    background: 'var(--bg)',
+                    border: '1px solid var(--line-2)',
+                    borderRadius: 2,
+                    color: 'var(--text)',
+                    fontFamily: 'inherit',
+                    fontSize: 11,
+                    padding: '7px 10px',
+                    outline: 'none',
+                  }}
+                />
+                <button className="btn btn-primary" onClick={pasteToken} title={t('settings.token.paste')} style={{ padding: '6px 10px', flexShrink: 0 }}>
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <rect x="3" y="4" width="10" height="11" rx="1"/>
+                    <path d="M6 4V3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v1"/>
+                    <line x1="5" y1="8" x2="11" y2="8"/>
+                    <line x1="5" y1="11" x2="9" y2="11"/>
+                  </svg>
+                </button>
+                <button className="btn btn-primary" onClick={clearToken} title={t('settings.token.clear')} style={{ padding: '6px 10px', flexShrink: 0 }}>
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                    <line x1="3" y1="3" x2="13" y2="13"/>
+                    <line x1="13" y1="3" x2="3" y2="13"/>
+                  </svg>
+                </button>
+                <button className="btn btn-primary" onClick={saveToken} title="Save" style={{ padding: '6px 12px', flexShrink: 0, fontSize: 12 }}>
+                  {tokenSaved ? t('settings.token.saved') : '✓'}
+                </button>
               </div>
             </SettingGroup>
 
