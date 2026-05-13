@@ -18,6 +18,9 @@ import (
 //go:embed all:frontend
 var assets embed.FS
 
+//go:embed data/heroes.json
+var heroesJSON []byte
+
 func main() {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	slog.SetDefault(logger)
@@ -27,7 +30,10 @@ func main() {
 		log.Fatal(err)
 	}
 
-	a := app.New(logger)
+	a, err := app.New(logger, heroesJSON)
+	if err != nil {
+		log.Fatalf("app: %v", err)
+	}
 
 	err = wails.Run(&options.App{
 		Title:     "d2pik",
