@@ -163,6 +163,24 @@ finalScore := synergyWeight*(avgWith-neutral) + counterWeight*(neutral-avgVs)
 5. Вернуть: [любимые] + [остальные]
 ```
 
+#### Стадии драфта
+
+Анализ работает на **любой стадии** — не только на ласт-пике. Пользователь может
+вставить скриншот в любой момент Captain's Mode:
+
+| Стадия | Типичная ситуация | Известно |
+|---|---|---|
+| Первый пик | 0–1 союзник, 2–3 врага | мало данных, вес контрпика важнее |
+| Середина драфта | 2 союзника, 2–3 врага | сбалансированный анализ |
+| Ласт-пик | 4 союзника, 4 врага | максимум данных |
+
+Формула скора автоматически адаптируется: при `n` врагах `avgVs` считается по `n`
+записям, при `m` союзниках `avgWith` — по `m`. Если союзников нет (`m = 0`),
+синергетическая часть формулы обнуляется и остаётся только контрпик.
+
+Технически это значит: `enemies` и `allies` в запросе могут содержать `null`-слоты —
+Go-бэкенд должен фильтровать `nil` перед передачей в GraphQL-запрос.
+
 ### 4. Профиль игрока (любимые герои)
 
 Хранится в `~/.d2pik/profile.json`:
@@ -200,10 +218,23 @@ finalScore := synergyWeight*(avgWith-neutral) + counterWeight*(neutral-avgVs)
 ```
 d2pik-helper/
 ├── cmd/
-│   └── main.go          # точка входа — только запуск
-├── frontend/            # HTML/CSS/JS фронтенд (Wails)
-│   ├── index.html
-│   └── src/
+│   └── main.go               # точка входа — только запуск
+├── frontend/                  # Wails assetdir (HTML/CSS/JS)
+│   ├── index.html             # точка входа фронтенда
+│   └── static/
+│       ├── css/
+│       │   └── app.css        # все стили, CSS-переменные, 9 тем
+│       ├── js/
+│       │   ├── hero-data.js   # база героев, позиции, темы, demo-данные
+│       │   ├── i18n.js        # RU/EN строки, хук useT(), LangContext
+│       │   ├── components.js  # ScoreBar, HeroPortrait, иконки
+│       │   ├── screen-draft.js
+│       │   ├── screen-results.js
+│       │   ├── screen-profile.js
+│       │   ├── screen-settings.js
+│       │   └── app.js         # шелл: TitleBar, Sidebar, роутинг экранов
+│       └── assets/
+│           └── heroes/        # портреты героев из CDN Dota 2 (кешируются)
 ├── internal/
 │   ├── app/
 │   │   └── app.go       # composition root + Wails App struct
