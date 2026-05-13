@@ -185,26 +185,38 @@ finalScore := synergyWeight*(avgWith-neutral) + counterWeight*(neutral-avgVs)
 
 ## Архитектура (модули)
 
+### UI фреймворк — Wails
+Фронтенд на HTML/CSS/JS, бэкенд на Go. Wails прокидывает Go-методы в JS —
+фронтенд вызывает их как обычные async-функции. Удобно для тёмной темы и
+отображения портретов героев.
+
+### Паттерн сборки — Composition Root
+`cmd/main.go` — минимальная точка входа, только запускает приложение.
+`internal/app/app.go` — собирает все зависимости, создаёт и связывает все пакеты.
+Он же является Wails App struct и экспортирует методы для фронтенда.
+
+### Структура
+
 ```
 d2pik-helper/
 ├── cmd/
-│   └── main.go              # точка входа, инициализация UI
+│   └── main.go          # точка входа — только запуск
+├── frontend/            # HTML/CSS/JS фронтенд (Wails)
+│   ├── index.html
+│   └── src/
 ├── internal/
+│   ├── app/
+│   │   └── app.go       # composition root + Wails App struct
 │   ├── models/
-│   │   └── hero.go          # типы: Hero, Draft, Recommendation
-│   ├── ui/                  # Fyne-экраны
-│   │   ├── draft.go         # главный экран — вставка скриншота
-│   │   ├── profile.go       # экран редактирования профиля
-│   │   └── result.go        # экран с рекомендациями
+│   │   └── hero.go      # типы: Hero, Draft, Recommendation
 │   ├── vision/
-│   │   └── recognizer.go    # распознавание героев из скриншота (pHash)
+│   │   └── recognizer.go  # распознавание героев из скриншота (pHash)
 │   ├── client/
-│   │   └── stratz.go        # GraphQL-клиент Stratz API
+│   │   └── stratz.go    # GraphQL-клиент Stratz API
 │   ├── core/
-│   │   └── picker.go        # логика ранжирования + интеграция с профилем
+│   │   └── picker.go    # логика ранжирования + интеграция с профилем
 │   └── profile/
-│       └── store.go         # чтение/запись profile.json
-├── assets/                  # иконки для UI
+│       └── store.go     # чтение/запись profile.json
 ├── go.mod
 └── CLAUDE.md
 ```
