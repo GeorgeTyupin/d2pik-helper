@@ -1,52 +1,5 @@
-// Abstract hero database — names are factual references for a companion utility.
-// Portraits are NOT recreated; we render abstract color-disc monograms.
-// Each hero gets: name, monogram, hue (oklch base), primary attribute, roles.
-
-const HEROES = [
-  // Carry / Mid pool
-  { id: 'jugg',  name: 'Juggernaut',        mark: 'JG', hue: 145, attr: 'agi', roles: ['carry'] },
-  { id: 'am',    name: 'Anti-Mage',         mark: 'AM', hue: 280, attr: 'agi', roles: ['carry'] },
-  { id: 'pa',    name: 'Phantom Assassin',  mark: 'PA', hue: 320, attr: 'agi', roles: ['carry'] },
-  { id: 'sf',    name: 'Shadow Fiend',      mark: 'SF', hue: 15,  attr: 'agi', roles: ['mid'] },
-  { id: 'inv',   name: 'Invoker',           mark: 'IV', hue: 50,  attr: 'int', roles: ['mid'] },
-  { id: 'sniper',name: 'Sniper',            mark: 'SN', hue: 35,  attr: 'agi', roles: ['carry','mid'] },
-  { id: 'drow',  name: 'Drow Ranger',       mark: 'DR', hue: 195, attr: 'agi', roles: ['carry'] },
-  { id: 'tb',    name: 'Terrorblade',       mark: 'TB', hue: 310, attr: 'agi', roles: ['carry'] },
-  { id: 'spec',  name: 'Spectre',           mark: 'SP', hue: 260, attr: 'agi', roles: ['carry'] },
-  { id: 'storm', name: 'Storm Spirit',      mark: 'ST', hue: 210, attr: 'int', roles: ['mid'] },
-  { id: 'puck',  name: 'Puck',              mark: 'PK', hue: 165, attr: 'int', roles: ['mid'] },
-  { id: 'tinker',name: 'Tinker',            mark: 'TK', hue: 25,  attr: 'int', roles: ['mid'] },
-  { id: 'ember', name: 'Ember Spirit',      mark: 'EM', hue: 10,  attr: 'agi', roles: ['mid'] },
-
-  // Offlane
-  { id: 'axe',   name: 'Axe',               mark: 'AX', hue: 0,   attr: 'str', roles: ['offlane'] },
-  { id: 'tide',  name: 'Tidehunter',        mark: 'TH', hue: 175, attr: 'str', roles: ['offlane'] },
-  { id: 'mars',  name: 'Mars',              mark: 'MR', hue: 20,  attr: 'str', roles: ['offlane'] },
-  { id: 'mag',   name: 'Magnus',            mark: 'MG', hue: 240, attr: 'str', roles: ['offlane'] },
-  { id: 'dk',    name: 'Dragon Knight',     mark: 'DK', hue: 30,  attr: 'str', roles: ['offlane','mid'] },
-  { id: 'centaur',name:'Centaur Warrunner', mark: 'CW', hue: 200, attr: 'str', roles: ['offlane'] },
-  { id: 'underlord',name:'Underlord',       mark: 'UL', hue: 280, attr: 'str', roles: ['offlane'] },
-
-  // Soft support
-  { id: 'mirana',name: 'Mirana',            mark: 'MI', hue: 220, attr: 'agi', roles: ['softsupport'] },
-  { id: 'rubick',name: 'Rubick',            mark: 'RB', hue: 290, attr: 'int', roles: ['softsupport'] },
-  { id: 'earth', name: 'Earth Spirit',      mark: 'ES', hue: 30,  attr: 'str', roles: ['softsupport'] },
-  { id: 'snap',  name: 'Snapfire',          mark: 'SF', hue: 5,   attr: 'str', roles: ['softsupport'] },
-  { id: 'jakiro',name: 'Jakiro',            mark: 'JK', hue: 195, attr: 'int', roles: ['softsupport'] },
-  { id: 'wd',    name: 'Witch Doctor',      mark: 'WD', hue: 290, attr: 'int', roles: ['softsupport','hardsupport'] },
-
-  // Hard support
-  { id: 'lion',  name: 'Lion',              mark: 'LN', hue: 280, attr: 'int', roles: ['hardsupport'] },
-  { id: 'cm',    name: 'Crystal Maiden',    mark: 'CM', hue: 210, attr: 'int', roles: ['hardsupport'] },
-  { id: 'lich',  name: 'Lich',              mark: 'LC', hue: 200, attr: 'int', roles: ['hardsupport'] },
-  { id: 'dazzle',name: 'Dazzle',            mark: 'DZ', hue: 320, attr: 'int', roles: ['hardsupport'] },
-  { id: 'oracle',name: 'Oracle',            mark: 'OR', hue: 30,  attr: 'int', roles: ['hardsupport'] },
-  { id: 'shaman',name: 'Shadow Shaman',     mark: 'SS', hue: 290, attr: 'int', roles: ['hardsupport'] },
-  { id: 'pugna', name: 'Pugna',             mark: 'PG', hue: 165, attr: 'int', roles: ['hardsupport','mid'] },
-  { id: 'omni',  name: 'Omniknight',        mark: 'OM', hue: 50,  attr: 'str', roles: ['offlane','hardsupport'] },
-];
-
-const HEROES_BY_ID = Object.fromEntries(HEROES.map(h => [h.id, h]));
+// Hero data is loaded at startup from the Go backend via Wails.
+// window.HEROES and window.HEROES_BY_ID are populated before renderApp() is called.
 
 const POSITIONS = [
   { key: 'carry',        name: 'Керри',        num: '1' },
@@ -56,21 +9,16 @@ const POSITIONS = [
   { key: 'hardsupport',  name: 'Хард Саппорт', num: '5' },
 ];
 
-// Demo draft for development/testing
-const DEMO_ENEMIES = ['am', 'storm', 'mars', 'rubick', 'lion'];
-const DEMO_ALLIES  = ['jugg', 'inv', null, null, null];
-
-// Synthetic recommendation engine — score by counter-vs-enemy + synergy-vs-ally heuristics.
-// Will be replaced by real Stratz API data.
+// Synthetic recommendation engine — placeholder until real Stratz matchup data is wired.
 function scoreAgainst(heroId, enemyIds, allyIds) {
   let s = 0;
   for (const e of enemyIds) {
     if (!e) continue;
-    s += (((heroId.charCodeAt(0) * 7 + e.charCodeAt(0) * 13) % 23) - 8);
+    s += (((heroId * 7 + e * 13) % 23) - 8);
   }
   for (const a of allyIds) {
     if (!a) continue;
-    s += (((heroId.charCodeAt(0) * 11 + a.charCodeAt(0) * 5) % 17) - 5);
+    s += (((heroId * 11 + a * 5) % 17) - 5);
   }
   return Math.max(40, Math.min(95, 65 + s));
 }
@@ -87,4 +35,8 @@ const THEMES = [
   { key: 'porcelain', name: 'Porcelain',  desc: 'Светлый, холодный',     swatch: { bg: '#f3f4f6', panel: '#e9ebef', accent: '#9d2d24', gold: '#8a6a2e' }, light: true },
 ];
 
-Object.assign(window, { HEROES, HEROES_BY_ID, POSITIONS, DEMO_ENEMIES, DEMO_ALLIES, scoreAgainst, THEMES });
+// Populated by app.js after GetHeroes() resolves.
+window.HEROES = [];
+window.HEROES_BY_ID = {};
+
+Object.assign(window, { POSITIONS, scoreAgainst, THEMES });

@@ -2,14 +2,33 @@
 
 function HeroPortrait({ hero, size = 'md', dim = false, showName = false, favorite = false }) {
   if (!hero) return null;
-  const bg = `oklch(38% 0.10 ${hero.hue})`;
-  const bg2 = `oklch(22% 0.08 ${hero.hue})`;
+  const [imgFailed, setImgFailed] = React.useState(false);
   const sizes = { xs: 36, sm: 48, md: 64, lg: 84 };
   const w = sizes[size];
+  // Fallback color disc uses a stable hue derived from the hero ID.
+  const hue = (hero.id * 47) % 360;
+  const bg  = `oklch(38% 0.10 ${hue})`;
+  const bg2 = `oklch(22% 0.08 ${hue})`;
+  // Two-letter monogram from displayName.
+  const mark = hero.displayName
+    ? hero.displayName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
+    : '?';
+  const cdnUrl = hero.shortName
+    ? `https://cdn.dota2.com/apps/dota2/images/heroes/${hero.shortName}_sb.png`
+    : null;
   return (
-    <div className="hp-wrap" style={{ width: w, opacity: dim ? 0.65 : 1 }} title={hero.name}>
+    <div className="hp-wrap" style={{ width: w, opacity: dim ? 0.65 : 1 }} title={hero.displayName}>
       <div className="hp" style={{ background: `linear-gradient(135deg, ${bg} 0%, ${bg2} 100%)` }}>
-        <span className="mono-mark" style={{ fontSize: w * 0.28 }}>{hero.mark}</span>
+        {cdnUrl && !imgFailed ? (
+          <img
+            src={cdnUrl}
+            alt={hero.displayName}
+            onError={() => setImgFailed(true)}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top', borderRadius: 2 }}
+          />
+        ) : (
+          <span className="mono-mark" style={{ fontSize: w * 0.28 }}>{mark}</span>
+        )}
         {favorite && (
           <span style={{
             position: 'absolute', top: 2, right: 3,
@@ -23,7 +42,7 @@ function HeroPortrait({ hero, size = 'md', dim = false, showName = false, favori
           marginTop: 4, fontSize: 10, color: 'var(--text-dim)',
           textAlign: 'center', whiteSpace: 'nowrap',
           overflow: 'hidden', textOverflow: 'ellipsis', width: w,
-        }}>{hero.name}</div>
+        }}>{hero.displayName}</div>
       )}
     </div>
   );

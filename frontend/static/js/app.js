@@ -20,14 +20,21 @@ function App() {
   const [hasScreenshot, setHasScreenshot] = useState(false);
   const [activePosition, setActivePosition] = useState('carry');
 
-  const [favorites, setFavorites] = useState(() => {
-    try {
-      const stored = localStorage.getItem('d2pik.favorites');
-      return stored ? JSON.parse(stored) : { carry: [], mid: [], offlane: [], softsupport: [], hardsupport: [] };
-    } catch {
-      return { carry: [], mid: [], offlane: [], softsupport: [], hardsupport: [] };
-    }
-  });
+  const emptyFavs = { carry: [], mid: [], offlane: [], softsupport: [], hardsupport: [] };
+  const [favorites, setFavorites] = useState(emptyFavs);
+
+  // Load favorites from backend on mount.
+  useEffect(() => {
+    const go = window.go?.app?.App;
+    if (!go) return;
+    go.GetFavorites().then(map => {
+      if (!map) return;
+      const posKeys = ['carry', 'mid', 'offlane', 'softsupport', 'hardsupport'];
+      const favs = {};
+      posKeys.forEach((key, i) => { favs[key] = (map[i + 1] || []).map(Number); });
+      setFavorites(favs);
+    }).catch(() => {});
+  }, []);
 
   // Apply theme to body class
   useEffect(() => {
@@ -49,7 +56,12 @@ function App() {
 
   const updateFavorites = (favs) => {
     setFavorites(favs);
-    localStorage.setItem('d2pik.favorites', JSON.stringify(favs));
+    const go = window.go?.app?.App;
+    if (!go) return;
+    const posKeys = ['carry', 'mid', 'offlane', 'softsupport', 'hardsupport'];
+    posKeys.forEach((key, i) => {
+      go.SetFavorites(i + 1, favs[key] || []).catch(() => {});
+    });
   };
 
   // Global Ctrl+V handler — passes clipboard image to Go backend for recognition
@@ -193,4 +205,19 @@ function Sidebar({ screen, setScreen }) {
   );
 }
 
-ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+function renderApp() {
+  ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+}
+
+// Load hero list from Go backend before rendering.
+// Falls back to immediate render in browser-only preview mode.
+const goApp = window.go?.app?.App;
+if (goApp) {
+  goApp.GetHeroes().then(heroes => {
+    window.HEROES = heroes || [];
+    window.HEROES_BY_ID = Object.fromEntries(window.HEROES.map(h => [h.id, h]));
+    renderApp();
+  }).catch(() => renderApp());
+} else {
+  renderApp();
+}
