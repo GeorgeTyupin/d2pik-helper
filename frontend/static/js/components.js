@@ -1,8 +1,8 @@
 // Shared visual components: hero portrait, score bar, icons.
 
 function HeroPortrait({ hero, size = 'md', dim = false, showName = false, favorite = false }) {
-  if (!hero) return null;
   const [imgFailed, setImgFailed] = React.useState(false);
+  if (!hero) return null;
   const sizes = { xs: 36, sm: 48, md: 64, lg: 84 };
   const w = sizes[size];
   // Fallback color disc uses a stable hue derived from the hero ID.

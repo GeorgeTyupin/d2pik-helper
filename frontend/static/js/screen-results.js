@@ -151,7 +151,7 @@ function ContextStrip({ label, color, heroes }) {
 function RecCard({ item, rank, t }) {
   const { hero, score, favorite } = item;
   const wr = (40 + (score - 40) * 0.6).toFixed(1);
-  const games = 100 + ((hero.id.charCodeAt(0) * 47) % 900);
+  const games = 100 + ((hero.id * 47) % 900);
 
   return (
     <div style={{

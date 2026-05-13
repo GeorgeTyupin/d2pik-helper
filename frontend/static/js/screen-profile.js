@@ -200,7 +200,7 @@ function HeroPicker({ onClose, onPick, alreadyPicked, positionLabel, positionFil
 
   const filtered = HEROES.filter(h => {
     if (!showAll && !h.roles.includes(positionFilter)) return false;
-    if (q && !h.name.toLowerCase().includes(q.toLowerCase())) return false;
+    if (q && !h.displayName.toLowerCase().includes(q.toLowerCase())) return false;
     return true;
   });
 

@@ -35,8 +35,20 @@ const THEMES = [
   { key: 'porcelain', name: 'Porcelain',  desc: 'Светлый, холодный',     swatch: { bg: '#f3f4f6', panel: '#e9ebef', accent: '#9d2d24', gold: '#8a6a2e' }, light: true },
 ];
 
+// Adds computed display fields to a hero object from the Go backend.
+function normalizeHero(h) {
+  return {
+    ...h,
+    name: h.displayName,
+    hue:  (h.id * 47) % 360,
+    mark: h.displayName
+      ? h.displayName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
+      : '?',
+  };
+}
+
 // Populated by app.js after GetHeroes() resolves.
 window.HEROES = [];
 window.HEROES_BY_ID = {};
 
-Object.assign(window, { POSITIONS, scoreAgainst, THEMES });
+Object.assign(window, { POSITIONS, scoreAgainst, THEMES, normalizeHero });

@@ -209,15 +209,20 @@ function renderApp() {
   ReactDOM.createRoot(document.getElementById('root')).render(<App />);
 }
 
-// Load hero list from Go backend before rendering.
-// Falls back to immediate render in browser-only preview mode.
-const goApp = window.go?.app?.App;
-if (goApp) {
-  goApp.GetHeroes().then(heroes => {
-    window.HEROES = heroes || [];
-    window.HEROES_BY_ID = Object.fromEntries(window.HEROES.map(h => [h.id, h]));
-    renderApp();
-  }).catch(() => renderApp());
-} else {
-  renderApp();
+// Render immediately so the app is never blocked.
+renderApp();
+
+// Load hero list from Go backend after render.
+try {
+  const goApp = window.go?.app?.App;
+  if (goApp && typeof goApp.GetHeroes === 'function') {
+    goApp.GetHeroes()
+      .then(heroes => {
+        window.HEROES = (heroes || []).map(normalizeHero);
+        window.HEROES_BY_ID = Object.fromEntries(window.HEROES.map(h => [h.id, h]));
+      })
+      .catch(() => {});
+  }
+} catch (e) {
+  console.error('hero load failed:', e);
 }
