@@ -15,3 +15,5 @@ export function GetSetting(arg1:string):Promise<string>;
 export function SetFavorites(arg1:number,arg2:Array<number>):Promise<void>;
 
 export function SetSetting(arg1:string,arg2:string):Promise<void>;
+
+export function Update(arg1:Array<models.Hero>):Promise<void>;

@@ -3,38 +3,62 @@ package herostore
 import (
 	"encoding/json"
 	"fmt"
+	"sync"
 
 	"d2pik/internal/models"
 )
 
-// Store holds the hero list loaded from the embedded heroes.json.
 type Store struct {
+	mu      sync.RWMutex
 	heroes  []models.Hero
 	byID    map[int]*models.Hero
 	byShort map[string]*models.Hero
 }
 
-// New parses the embedded heroes.json bytes.
 func New(data []byte) (*Store, error) {
 	var heroes []models.Hero
 	if err := json.Unmarshal(data, &heroes); err != nil {
 		return nil, fmt.Errorf("herostore: parse: %w", err)
 	}
-
-	s := &Store{
-		heroes:  heroes,
-		byID:    make(map[int]*models.Hero, len(heroes)),
-		byShort: make(map[string]*models.Hero, len(heroes)),
-	}
-	for i := range s.heroes {
-		h := &s.heroes[i]
-		s.byID[h.ID] = h
-		s.byShort[h.ShortName] = h
-	}
+	s := &Store{}
+	s.set(heroes)
 	return s, nil
 }
 
-// GetHeroes is the Wails-bound method — returns the full hero list.
-func (s *Store) GetHeroes() []models.Hero              { return s.heroes }
-func (s *Store) ByID(id int) *models.Hero              { return s.byID[id] }
-func (s *Store) ByShortName(name string) *models.Hero  { return s.byShort[name] }
+// Update replaces the hero list atomically. Safe for concurrent use.
+func (s *Store) Update(heroes []models.Hero) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.set(heroes)
+}
+
+func (s *Store) set(heroes []models.Hero) {
+	byID := make(map[int]*models.Hero, len(heroes))
+	byShort := make(map[string]*models.Hero, len(heroes))
+	for i := range heroes {
+		h := &heroes[i]
+		byID[h.ID] = h
+		byShort[h.ShortName] = h
+	}
+	s.heroes = heroes
+	s.byID = byID
+	s.byShort = byShort
+}
+
+func (s *Store) GetHeroes() []models.Hero {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return s.heroes
+}
+
+func (s *Store) ByID(id int) *models.Hero {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return s.byID[id]
+}
+
+func (s *Store) ByShortName(name string) *models.Hero {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return s.byShort[name]
+}

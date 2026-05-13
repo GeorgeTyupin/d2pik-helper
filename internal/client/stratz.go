@@ -9,7 +9,7 @@ import (
 	"d2pik/internal/models"
 )
 
-const stratzGraphQL = "https://api.stratz.com/api/v1/graphql"
+const stratzGraphQL = "https://api.stratz.com/graphql"
 
 type heroesResponse struct {
 	Data struct {
@@ -57,6 +57,7 @@ func (c *Client) FetchHeroes() ([]models.Hero, error) {
 			ID:          h.ID,
 			ShortName:   h.ShortName,
 			DisplayName: h.DisplayName,
+			Roles:       []string{},
 		})
 	}
 	return heroes, nil
@@ -70,6 +71,7 @@ func (c *Client) query(q string) ([]byte, error) {
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+c.token)
+	req.Header.Set("User-Agent", "d2pik-helper/0.1")
 
 	res, err := c.httpClient.Do(req)
 	if err != nil {

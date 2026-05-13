@@ -51,4 +51,8 @@ function normalizeHero(h) {
 window.HEROES = [];
 window.HEROES_BY_ID = {};
 
+// Demo draft data for simulate/paste fallback (uses real Stratz hero IDs).
+window.DEMO_ENEMIES = [1, 2, 5, 8, 26];   // AM, Axe, CM, Jugg, Lina
+window.DEMO_ALLIES  = [11, 22, 31, null, null]; // DS, WR, DP
+
 Object.assign(window, { POSITIONS, scoreAgainst, THEMES, normalizeHero });

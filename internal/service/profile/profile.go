@@ -2,18 +2,14 @@ package profile
 
 import "d2pik/internal/repository"
 
-type ProfileService struct {
-	db *repository.DB
-}
+type ProfileService struct{}
 
-func New(db *repository.DB) *ProfileService {
-	return &ProfileService{db: db}
-}
+func New() *ProfileService { return &ProfileService{} }
 
 func (s *ProfileService) GetFavorites() (map[int][]int, error) {
-	return s.db.GetFavorites()
+	return repository.GetFavorites()
 }
 
-func (s *ProfileService) SetFavorites(position int, heroIDs []int) error {
-	return s.db.SetFavorites(position, heroIDs)
+func (s *ProfileService) SetFavorites(pos int, ids []int) error {
+	return repository.SetFavorites(pos, ids)
 }

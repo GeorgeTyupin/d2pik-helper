@@ -29,3 +29,7 @@ export function SetFavorites(arg1, arg2) {
 export function SetSetting(arg1, arg2) {
   return window['go']['app']['App']['SetSetting'](arg1, arg2);
 }
+
+export function Update(arg1) {
+  return window['go']['app']['App']['Update'](arg1);
+}

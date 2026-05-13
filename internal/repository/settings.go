@@ -1,18 +1,21 @@
 package repository
 
-type Setting struct {
-	Key   string `gorm:"primaryKey"`
-	Value string
-}
-
-func (db *DB) GetSetting(key string) (string, error) {
-	var s Setting
-	if err := db.orm.First(&s, "key = ?", key).Error; err != nil {
-		return "", nil
+func GetSetting(key string) (string, error) {
+	var settings map[string]string
+	if err := loadJSON("settings.json", &settings); err != nil {
+		return "", err
 	}
-	return s.Value, nil
+	return settings[key], nil
 }
 
-func (db *DB) SetSetting(key, value string) error {
-	return db.orm.Save(&Setting{Key: key, Value: value}).Error
+func SetSetting(key, value string) error {
+	var settings map[string]string
+	if err := loadJSON("settings.json", &settings); err != nil {
+		return err
+	}
+	if settings == nil {
+		settings = make(map[string]string)
+	}
+	settings[key] = value
+	return saveJSON("settings.json", settings)
 }

@@ -2,18 +2,14 @@ package settings
 
 import "d2pik/internal/repository"
 
-type SettingsService struct {
-	db *repository.DB
-}
+type SettingsService struct{}
 
-func New(db *repository.DB) *SettingsService {
-	return &SettingsService{db: db}
-}
+func New() *SettingsService { return &SettingsService{} }
 
 func (s *SettingsService) GetSetting(key string) (string, error) {
-	return s.db.GetSetting(key)
+	return repository.GetSetting(key)
 }
 
 func (s *SettingsService) SetSetting(key, value string) error {
-	return s.db.SetSetting(key, value)
+	return repository.SetSetting(key, value)
 }

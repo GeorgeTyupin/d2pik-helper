@@ -9,7 +9,10 @@ function ScreenResults({ enemies, allies, favorites, activePosition, setActivePo
   const pos = activePosition || 'carry';
 
   const drafted = new Set([...enemies, ...allies].filter(Boolean));
-  const candidates = HEROES.filter(h => h.roles.includes(pos) && !drafted.has(h.id));
+  const candidates = HEROES.filter(h => {
+    const heroRoles = h.roles || [];
+    return heroRoles.length === 0 || heroRoles.includes(pos);
+  }).filter(h => !drafted.has(h.id));
 
   const favSet = new Set(favorites[pos] || []);
 

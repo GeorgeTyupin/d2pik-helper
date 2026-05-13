@@ -11,8 +11,8 @@ function ScreenDraft({ enemies, allies, setEnemies, setAllies, hasScreenshot, se
   const handleSimulateRecognition = () => {
     // Simulate hero recognition from screenshot — real implementation uses Go/pHash backend.
     setHasScreenshot(true);
-    setEnemies(window.DEMO_ENEMIES);
-    setAllies(window.DEMO_ALLIES);
+    setEnemies(window.DEMO_ENEMIES || [null, null, null, null, null]);
+    setAllies(window.DEMO_ALLIES   || [null, null, null, null, null]);
   };
 
   const handleAnalyze = () => {
@@ -29,8 +29,8 @@ function ScreenDraft({ enemies, allies, setEnemies, setAllies, hasScreenshot, se
     setAllies([null, null, null, null, null]);
   };
 
-  const enemyHeroes = enemies.map(id => id ? HEROES_BY_ID[id] : null);
-  const allyHeroes  = allies.map(id => id ? HEROES_BY_ID[id] : null);
+  const enemyHeroes = (enemies || []).map(id => id ? HEROES_BY_ID[id] : null);
+  const allyHeroes  = (allies  || []).map(id => id ? HEROES_BY_ID[id] : null);
 
   return (
     <>

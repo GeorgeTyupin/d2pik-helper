@@ -13,13 +13,11 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
 
 	"d2pik/internal/app"
+	"d2pik/internal/service/heroloader"
 )
 
 //go:embed all:frontend
 var assets embed.FS
-
-//go:embed data/heroes.json
-var heroesJSON []byte
 
 func main() {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
@@ -29,6 +27,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	heroesJSON := heroloader.LoadFromCache(logger)
 
 	a, err := app.New(logger, heroesJSON)
 	if err != nil {
