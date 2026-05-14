@@ -12,34 +12,39 @@ import (
 	"d2pik/internal/repository"
 )
 
-const cacheFile = "heroes.json"
+const (
+	cacheFile         = "heroes.json"
+	positionThreshold = 0.10
+)
 
-var laneRoleToPositions = map[int][]string{
-	1: {"carry"},
-	2: {"mid"},
-	3: {"offlane"},
-	4: {"softsupport", "hardsupport"},
+var stratzPositionToRole = map[string]string{
+	"POSITION_1": "carry",
+	"POSITION_2": "mid",
+	"POSITION_3": "offlane",
+	"POSITION_4": "softsupport",
+	"POSITION_5": "hardsupport",
 }
 
-func mergeRoles(heroes []models.Hero, laneRoles client.HeroLaneRoles, logger *slog.Logger) {
+func mergeRoles(heroes []models.Hero, posStats client.HeroPositionStats, logger *slog.Logger) {
+	order := []string{"POSITION_1", "POSITION_2", "POSITION_3", "POSITION_4", "POSITION_5"}
 	for i := range heroes {
-		lanes, ok := laneRoles[heroes[i].ID]
-		if !ok {
+		byPos := posStats[heroes[i].ID]
+		var total int64
+		for _, c := range byPos {
+			total += c
+		}
+		if total == 0 {
 			continue
 		}
-		seen := map[string]bool{}
-		positions := make([]string, 0, 4)
-		for _, lane := range lanes {
-			for _, pos := range laneRoleToPositions[lane] {
-				if !seen[pos] {
-					seen[pos] = true
-					positions = append(positions, pos)
-				}
+		roles := make([]string, 0, 3)
+		for _, pos := range order {
+			if float64(byPos[pos])/float64(total) >= positionThreshold {
+				roles = append(roles, stratzPositionToRole[pos])
 			}
 		}
-		heroes[i].Roles = positions
+		heroes[i].Roles = roles
 	}
-	logger.Info("heroloader: merged lane roles from OpenDota")
+	logger.Info("heroloader: merged roles from Stratz position stats")
 }
 
 // LoadFromCache reads heroes from ~/.d2pik/heroes.json.
@@ -54,9 +59,8 @@ func LoadFromCache(logger *slog.Logger) []byte {
 	return []byte("[]")
 }
 
-// FetchAndUpdate fetches fresh heroes from Stratz + lane roles from OpenDota
+// FetchAndUpdate fetches fresh heroes + position stats from Stratz in one request
 // and calls onDone with the result. Designed to run in a goroutine after startup.
-// If OpenDota is unavailable, the existing cache is preserved and onDone is not called.
 func FetchAndUpdate(logger *slog.Logger, onDone func([]models.Hero)) {
 	token, err := repository.GetSetting("stratz_token")
 	if err != nil || token == "" {
@@ -64,18 +68,13 @@ func FetchAndUpdate(logger *slog.Logger, onDone func([]models.Hero)) {
 		return
 	}
 
-	heroes, err := client.New(token).FetchHeroes()
+	heroes, posStats, err := client.New(token).FetchHeroes()
 	if err != nil {
 		logger.Warn("heroloader: stratz fetch failed", "err", err)
 		return
 	}
 
-	laneRoles, err := client.FetchHeroLaneRoles()
-	if err != nil {
-		logger.Warn("heroloader: opendota unavailable, keeping existing cache", "err", err)
-		return
-	}
-	mergeRoles(heroes, laneRoles, logger)
+	mergeRoles(heroes, posStats, logger)
 
 	data, err := json.MarshalIndent(heroes, "", "  ")
 	if err != nil {

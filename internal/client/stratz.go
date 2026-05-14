@@ -16,6 +16,9 @@ type heroesResponse struct {
 		Constants struct {
 			Heroes []heroDTO `json:"heroes"`
 		} `json:"constants"`
+		HeroStats struct {
+			Stats []heroPositionStatDTO `json:"stats"`
+		} `json:"heroStats"`
 	} `json:"data"`
 }
 
@@ -25,27 +28,48 @@ type heroDTO struct {
 	DisplayName string `json:"displayName"`
 }
 
+type heroPositionStatDTO struct {
+	HeroID     int    `json:"heroId"`
+	Position   string `json:"position"`
+	MatchCount int64  `json:"matchCount"`
+}
+
+// HeroPositionStats maps heroId → position name → matchCount.
+type HeroPositionStats map[int]map[string]int64
+
+type httpDoer interface {
+	Do(req *http.Request) (*http.Response, error)
+}
+
 type Client struct {
 	token      string
-	httpClient *http.Client
+	httpClient httpDoer
 }
 
 func New(token string) *Client {
 	return &Client{token: token, httpClient: &http.Client{}}
 }
 
-// FetchHeroes fetches the full hero list from Stratz constants.
-func (c *Client) FetchHeroes() ([]models.Hero, error) {
-	const query = `{ constants { heroes { id shortName displayName } } }`
+func NewWithClient(token string, doer httpDoer) *Client {
+	return &Client{token: token, httpClient: doer}
+}
+
+// FetchHeroes fetches the full hero list from Stratz constants plus
+// position stats (groupByPosition) in a single request.
+func (c *Client) FetchHeroes() ([]models.Hero, HeroPositionStats, error) {
+	const query = `{
+		constants { heroes { id shortName displayName } }
+		heroStats { stats(groupByPosition: true) { heroId position matchCount } }
+	}`
 
 	body, err := c.query(query)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	var resp heroesResponse
 	if err := json.Unmarshal(body, &resp); err != nil {
-		return nil, fmt.Errorf("stratz: decode heroes: %w", err)
+		return nil, nil, fmt.Errorf("stratz: decode heroes: %w", err)
 	}
 
 	heroes := make([]models.Hero, 0, len(resp.Data.Constants.Heroes))
@@ -60,7 +84,16 @@ func (c *Client) FetchHeroes() ([]models.Hero, error) {
 			Roles:       []string{},
 		})
 	}
-	return heroes, nil
+
+	posStats := make(HeroPositionStats)
+	for _, s := range resp.Data.HeroStats.Stats {
+		if posStats[s.HeroID] == nil {
+			posStats[s.HeroID] = make(map[string]int64)
+		}
+		posStats[s.HeroID][s.Position] = s.MatchCount
+	}
+
+	return heroes, posStats, nil
 }
 
 func (c *Client) query(q string) ([]byte, error) {
