@@ -12,3 +12,6 @@ d2pik-helper.exe
 
 # User config
 ~/.d2pik/
+
+# IDE
+.vscode/
