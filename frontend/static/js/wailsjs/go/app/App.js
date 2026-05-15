@@ -22,6 +22,10 @@ export function GetSetting(arg1) {
   return window['go']['app']['App']['GetSetting'](arg1);
 }
 
+export function PortraitsBaseURL() {
+  return window['go']['app']['App']['PortraitsBaseURL']();
+}
+
 export function SetFavorites(arg1, arg2) {
   return window['go']['app']['App']['SetFavorites'](arg1, arg2);
 }

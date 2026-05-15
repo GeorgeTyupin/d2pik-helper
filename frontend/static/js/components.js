@@ -1,29 +1,41 @@
 // Shared visual components: hero portrait, score bar, icons.
 
 function HeroPortrait({ hero, size = 'md', dim = false, showName = false, favorite = false }) {
-  const [imgFailed, setImgFailed] = React.useState(false);
+  const base = window.portraitsBase || '';
+  const localUrl = hero && hero.shortName ? `${base}/${hero.shortName}_full.png` : null;
+  const cdnUrl   = hero && hero.shortName
+    ? `https://cdn.dota2.com/apps/dota2/images/heroes/${hero.shortName}_full.png`
+    : null;
+  const [src, setSrc] = React.useState(localUrl);
+  const [cdnUsed, setCdnUsed] = React.useState(false);
+
   if (!hero) return null;
   const sizes = { xs: 36, sm: 48, md: 64, lg: 84 };
   const w = sizes[size];
-  // Fallback color disc uses a stable hue derived from the hero ID.
   const hue = (hero.id * 47) % 360;
   const bg  = `oklch(38% 0.10 ${hue})`;
   const bg2 = `oklch(22% 0.08 ${hue})`;
-  // Two-letter monogram from displayName.
   const mark = hero.displayName
     ? hero.displayName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
     : '?';
-  const cdnUrl = hero.shortName
-    ? `https://cdn.dota2.com/apps/dota2/images/heroes/${hero.shortName}_sb.png`
-    : null;
+
+  function handleError() {
+    if (!cdnUsed && cdnUrl) {
+      setCdnUsed(true);
+      setSrc(cdnUrl);
+    } else {
+      setSrc(null);
+    }
+  }
+
   return (
     <div className="hp-wrap" style={{ width: w, opacity: dim ? 0.65 : 1 }} title={hero.displayName}>
       <div className="hp" style={{ background: `linear-gradient(135deg, ${bg} 0%, ${bg2} 100%)` }}>
-        {cdnUrl && !imgFailed ? (
+        {src ? (
           <img
-            src={cdnUrl}
+            src={src}
             alt={hero.displayName}
-            onError={() => setImgFailed(true)}
+            onError={handleError}
             style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top', borderRadius: 2 }}
           />
         ) : (

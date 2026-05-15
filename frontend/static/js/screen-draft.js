@@ -180,6 +180,38 @@ function ScreenDraft({ enemies, allies, setEnemies, setAllies, hasScreenshot, se
   );
 }
 
+function DraftHeroSlot({ hero }) {
+  const base = window.portraitsBase || '';
+  const primaryUrl  = hero.shortName ? `${base}/${hero.shortName}_full.png` : null;
+  const fallbackUrl = hero.shortName ? `https://cdn.dota2.com/apps/dota2/images/heroes/${hero.shortName}_full.png` : null;
+  const [src, setSrc] = React.useState(primaryUrl);
+  const [tried, setTried] = React.useState(0);
+
+  const hue = (hero.id * 47) % 360;
+  const mark = hero.displayName
+    ? hero.displayName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
+    : '?';
+
+  function handleError() {
+    if (tried === 0 && fallbackUrl) { setTried(1); setSrc(fallbackUrl); }
+    else { setSrc(null); }
+  }
+
+  return (
+    <div className="hp" style={{
+      aspectRatio: '1.4 / 1',
+      background: `linear-gradient(135deg, oklch(40% 0.10 ${hue}) 0%, oklch(22% 0.08 ${hue}) 100%)`,
+    }}>
+      {src ? (
+        <img src={src} alt={hero.displayName} onError={handleError}
+          style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top', borderRadius: 2 }} />
+      ) : (
+        <span className="mono-mark" style={{ fontSize: 18 }}>{mark}</span>
+      )}
+    </div>
+  );
+}
+
 function SlotRow({ label, sub, count, heroes, color, positions, t }) {
   return (
     <div>
@@ -199,12 +231,7 @@ function SlotRow({ label, sub, count, heroes, color, positions, t }) {
           <div key={i} className="col" style={{ gap: 4 }}>
             <div style={{ width: '100%' }}>
               {h ? (
-                <div className="hp" style={{
-                  aspectRatio: '1.4 / 1',
-                  background: `linear-gradient(135deg, oklch(40% 0.10 ${h.hue}) 0%, oklch(22% 0.08 ${h.hue}) 100%)`,
-                }}>
-                  <span className="mono-mark" style={{ fontSize: 18 }}>{h.mark}</span>
-                </div>
+                <DraftHeroSlot hero={h} />
               ) : (
                 <div className="hp empty" style={{ aspectRatio: '1.4 / 1' }}>
                   <span style={{ fontSize: 18 }}>—</span>

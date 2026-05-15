@@ -1,11 +1,14 @@
 package main
 
 import (
+	"crypto/tls"
 	"embed"
 	"io/fs"
 	"log"
 	"log/slog"
+	"net/http"
 	"os"
+	"path/filepath"
 
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -13,7 +16,9 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
 
 	"d2pik/internal/app"
+	"d2pik/internal/repository"
 	"d2pik/internal/service/heroloader"
+	"d2pik/internal/service/portraits"
 )
 
 //go:embed all:frontend
@@ -28,9 +33,25 @@ func main() {
 		log.Fatal(err)
 	}
 
+	home, err := os.UserHomeDir()
+	if err != nil {
+		log.Fatalf("home dir: %v", err)
+	}
+	portraitsDir := filepath.Join(home, ".d2pik", "portraits")
+
+	cdnClient := &http.Client{Transport: &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, //nolint:gosec
+	}}
+	portraitLoader := portraits.New(portraitsDir, cdnClient, repository.HashRepo{})
+
+	portraitsBase, err := portraitLoader.ListenAndServe()
+	if err != nil {
+		log.Fatalf("portraits server: %v", err)
+	}
+
 	heroesJSON := heroloader.LoadFromCache(logger)
 
-	a, err := app.New(logger, heroesJSON)
+	a, err := app.New(logger, heroesJSON, portraitLoader, portraitsBase)
 	if err != nil {
 		log.Fatalf("app: %v", err)
 	}

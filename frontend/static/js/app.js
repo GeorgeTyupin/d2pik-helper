@@ -24,6 +24,13 @@ function App() {
   const emptyFavs = { carry: [], mid: [], offlane: [], softsupport: [], hardsupport: [] };
   const [favorites, setFavorites] = useState(emptyFavs);
 
+  // Fetch portrait server base URL once and store globally.
+  useEffect(() => {
+    window.go?.app?.App.PortraitsBaseURL?.()
+      .then(base => { window.portraitsBase = base; })
+      .catch(() => {});
+  }, []);
+
   // Check if first run (no Stratz token yet).
   useEffect(() => {
     const go = window.go?.app?.App;

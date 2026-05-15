@@ -7,7 +7,13 @@ import (
 	"path/filepath"
 )
 
+// dataDirOverride allows tests to redirect storage to a temp directory.
+var dataDirOverride string
+
 func dataDir() (string, error) {
+	if dataDirOverride != "" {
+		return dataDirOverride, os.MkdirAll(dataDirOverride, 0o755)
+	}
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return "", err

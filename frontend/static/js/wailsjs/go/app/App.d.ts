@@ -12,6 +12,8 @@ export function GetHeroes():Promise<Array<models.Hero>>;
 
 export function GetSetting(arg1:string):Promise<string>;
 
+export function PortraitsBaseURL():Promise<string>;
+
 export function SetFavorites(arg1:number,arg2:Array<number>):Promise<void>;
 
 export function SetSetting(arg1:string,arg2:string):Promise<void>;

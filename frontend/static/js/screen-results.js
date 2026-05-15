@@ -134,14 +134,9 @@ function ContextStrip({ label, color, heroes }) {
         {Array.from({ length: 5 }).map((_, i) => {
           const h = heroes[i];
           return h ? (
-            <div key={i} className="hp" style={{
-              width: 38, aspectRatio: '1.4 / 1', flex: '0 0 auto',
-              background: `linear-gradient(135deg, oklch(40% 0.10 ${h.hue}) 0%, oklch(22% 0.08 ${h.hue}) 100%)`,
-            }}>
-              <span className="mono-mark" style={{ fontSize: 10 }}>{h.mark}</span>
-            </div>
+            <HeroPortrait key={i} hero={h} size="xs" />
           ) : (
-            <div key={i} className="hp empty" style={{ width: 38, aspectRatio: '1.4 / 1', flex: '0 0 auto' }}>
+            <div key={i} className="hp empty" style={{ width: 36, flex: '0 0 auto' }}>
               <span style={{ fontSize: 12 }}>—</span>
             </div>
           );
@@ -159,7 +154,7 @@ function RecCard({ item, rank, t }) {
   return (
     <div style={{
       display: 'grid',
-      gridTemplateColumns: '28px 56px 1fr 90px 60px 70px',
+      gridTemplateColumns: '28px 48px 1fr 90px 60px 70px',
       alignItems: 'center', gap: 10,
       padding: '8px 10px',
       background: favorite ? 'linear-gradient(90deg, rgba(201,164,94,.06) 0%, var(--panel) 60%)' : 'var(--panel)',
@@ -177,12 +172,7 @@ function RecCard({ item, rank, t }) {
       </div>
 
       {/* Portrait */}
-      <div className="hp" style={{
-        aspectRatio: '1.4 / 1',
-        background: `linear-gradient(135deg, oklch(42% 0.11 ${hero.hue}) 0%, oklch(22% 0.08 ${hero.hue}) 100%)`,
-      }}>
-        <span className="mono-mark" style={{ fontSize: 14 }}>{hero.mark}</span>
-      </div>
+      <HeroPortrait hero={hero} size="sm" />
 
       {/* Name + tags */}
       <div className="col" style={{ gap: 3, minWidth: 0 }}>
